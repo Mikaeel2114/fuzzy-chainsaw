@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Redirects the flaky "commons-repo" (repo.fusesource.com) to the andrei1058 repo.
+     Mirrors also apply to repositories declared inside dependency POMs (sidebar-base). -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <mirrors>
+        <mirror>
+            <id>andrei-instead-of-fusesource</id>
+            <mirrorOf>commons-repo</mirrorOf>
+            <name>andrei1058 repo (replaces repo.fusesource.com)</name>
+            <url>https://repo.andrei1058.com/releases/</url>
+        </mirror>
+    </mirrors>
+</settings>

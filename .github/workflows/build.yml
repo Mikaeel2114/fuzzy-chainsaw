@@ -1,0 +1,56 @@
+name: Build MineStorm BedWars
+
+on:
+  push:
+    branches: [ "**" ]
+    tags: [ "v*" ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with Maven (retries if the third-party Maven repo times out)
+        run: |
+          for attempt in 1 2 3 4; do
+            if mvn -B -ntp -U -s .github/maven-settings.xml clean package -DskipTests; then
+              exit 0
+            fi
+            echo "Build attempt $attempt failed, waiting before retry..."
+            sleep $((attempt * 30))
+          done
+          exit 1
+
+      - name: Collect jar
+        run: |
+          mkdir -p dist
+          find bedwars-plugin/target -maxdepth 1 -name "MineStorm-BedWars-*.jar" ! -name "original-*" -exec cp {} dist/ \;
+          ls -la dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MineStorm-BedWars
+          path: dist/*.jar
+          if-no-files-found: error
+
+      - name: Publish release (on tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.jar
+          generate_release_notes: true
